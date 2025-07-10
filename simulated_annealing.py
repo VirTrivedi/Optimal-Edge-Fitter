@@ -49,7 +49,7 @@ class TheoParameterOptimizer:
         self.history: List[Dict] = []
 
     def extract_base_config_values(self):
-        """Extract static values from base config"""
+        """Extract static values from base config."""
         try:
             with open(self.config_path, 'r') as f:
                 content = f.read()
@@ -163,7 +163,7 @@ class TheoParameterOptimizer:
         return results
     
     def generate_neighbor(self, temperature: float) -> Tuple[float, float]:
-        """Generate neighbor with adaptive step size that decreases with temperature"""
+        """Generate neighbor with adaptive step size that decreases with temperature."""
         temp_factor = min(1.0, temperature / INITIAL_TEMPERATURE * 3)
         place_step = 0.2 * temp_factor
         cancel_step = 0.1 * temp_factor
@@ -180,22 +180,56 @@ class TheoParameterOptimizer:
     
     def calculate_fitness(self, results: Dict) -> float:
         """
-        Calculate fitness score for a set of simulation results.
+        Calculate fitness score for simulation results with risk adjustment.
         """
         pnl = results['pnl']
         fill_rate = results['fill_rate']
         orders_placed = results['orders_placed']
+        orders_filled = results.get('orders_filled', 0)
         
-        # We want to maximize P&L and have a reasonable fill rate
         if orders_placed < 10:
             return float('-inf')
         
+        # Calculate sharpe-like ratio if we have enough filled orders
+        if orders_filled >= 5:
+            # Estimate average P&L per trade
+            avg_pnl_per_trade = pnl / orders_filled if orders_filled > 0 else 0
+            
+            # Use a default standard deviation since we don't have individual trade P&Ls
+            default_std_dev = abs(avg_pnl_per_trade) * 0.5
+            std_dev = max(0.01, default_std_dev)
+            
+            # Calculate risk-adjusted return component
+            risk_adjusted_return = avg_pnl_per_trade / std_dev
+            risk_component = risk_adjusted_return * 10
+        else:
+            risk_component = 0
+        
+        # Fill rate components
         if fill_rate < 0.1:
             fill_rate_penalty = -100
         else:
             fill_rate_penalty = 0
         
-        return pnl + fill_rate_penalty
+        # Bonus for higher fill rates when P&L is positive
+        fill_rate_bonus = 0
+        if pnl > 0 and fill_rate > 0.5:
+            fill_rate_bonus = fill_rate * 5
+        
+        # Reward higher P&L per filled order
+        pnl_efficiency = 0
+        if orders_filled > 0:
+            pnl_per_filled = pnl / orders_filled
+            # Scale based on whether it's profit or loss
+            if pnl > 0:
+                pnl_efficiency = pnl_per_filled * 10.0
+            else:
+                pnl_efficiency = pnl_per_filled * 5.0
+        
+        # Combine components with appropriate weights
+        fitness = (pnl * 3.0) + fill_rate_penalty + fill_rate_bonus + (risk_component * 5.0) + pnl_efficiency
+        
+        return fitness
     
     def run_optimization(self, iterations: int = MAX_ITERATIONS) -> Dict:
         """
