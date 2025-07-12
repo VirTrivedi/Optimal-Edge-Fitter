@@ -33,7 +33,9 @@ class TheoParameterOptimizer:
         initial_place_edge: float = 0.5,
         initial_cancel_edge: float = 0.2
     ):
-        """Initialize the optimizer with paths and initial parameters."""
+        """
+        Initialize the optimizer with paths and initial parameters.
+        """
         self.simulator_path = simulator_path
         self.config_path = config_path
         self.book_events_path = book_events_path
@@ -49,7 +51,9 @@ class TheoParameterOptimizer:
         self.history: List[Dict] = []
 
     def extract_base_config_values(self):
-        """Extract static values from base config."""
+        """
+        Extract static values from base config.
+        """
         try:
             with open(self.config_path, 'r') as f:
                 content = f.read()
@@ -113,7 +117,9 @@ class TheoParameterOptimizer:
             }
     
     def create_temp_config(self, place_edge: float, cancel_edge: float) -> str:
-        # Create a new config file
+        """
+        Create a temporary config file with the parameters.
+        """
         temp_config_path = f"temp_config_{random.randint(1000, 9999)}.toml"
         
         with open(temp_config_path, 'w') as f:
@@ -133,7 +139,9 @@ class TheoParameterOptimizer:
         return temp_config_path
     
     def parse_simulation_results(self, output: str) -> Dict:
-        """Parse simulation results from the output."""
+        """
+        Parse simulation results from the output.
+        """
         results = {
             'pnl': 0.0,
             'fill_rate': 0.0,
@@ -163,7 +171,9 @@ class TheoParameterOptimizer:
         return results
     
     def generate_neighbor(self, temperature: float) -> Tuple[float, float]:
-        """Generate neighbor with adaptive step size that decreases with temperature."""
+        """
+        Generate neighbor with adaptive step size that decreases with temperature.
+        """
         temp_factor = min(1.0, temperature / INITIAL_TEMPERATURE * 3)
         place_step = 0.2 * temp_factor
         cancel_step = 0.1 * temp_factor
@@ -378,7 +388,9 @@ class TheoParameterOptimizer:
         }
     
 def main():
-    """Main function to run the parameter optimization."""
+    """
+    Main function to run the parameter optimization.
+    """
     parser = argparse.ArgumentParser(description='Optimize TheoStrategy parameters using Simulated Annealing')
     
     parser.add_argument('--simulator', type=str, required=True,

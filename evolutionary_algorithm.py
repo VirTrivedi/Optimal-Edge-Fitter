@@ -24,10 +24,13 @@ DEFAULT_CROSSOVER_RATE = 0.7
 
 
 class Individual:
-    """Represents a candidate solution in the population."""
-    
+    """
+    Represents a candidate solution in the population.
+    """
     def __init__(self, place_edge: float, cancel_edge: float):
-        """Initialize an individual with place_edge and cancel_edge parameters."""
+        """
+        Initialize an individual with place_edge and cancel_edge parameters.
+        """
         self.place_edge = place_edge
         self.cancel_edge = min(cancel_edge, place_edge * 0.95)
         self.fitness = float('-inf')
@@ -67,7 +70,9 @@ class EvolutionaryOptimizer:
         self.evaluation_cache = {}
     
     def extract_base_config_values(self):
-        """Extract static values from base config."""
+        """
+        Extract static values from base config.
+        """
         try:
             with open(self.config_path, 'r') as f:
                 content = f.read()
@@ -84,7 +89,9 @@ class EvolutionaryOptimizer:
             print(f"Warning: Could not extract base config values: {e}")
     
     def create_initial_population(self) -> List[Individual]:
-        """Create the initial population of individuals."""
+        """
+        Create the initial population of individuals.
+        """
         population = []
         
         # Create random individuals
@@ -111,7 +118,9 @@ class EvolutionaryOptimizer:
         return population
     
     def evaluate_individual(self, individual: Individual) -> Dict:
-        """Evaluate an individual by running a simulation."""
+        """
+        Evaluate an individual by running a simulation.
+        """
         # Check if we've already evaluated this individual
         cache_key = (round(individual.place_edge, 4), round(individual.cancel_edge, 4))
         if cache_key in self.evaluation_cache:
@@ -197,7 +206,9 @@ class EvolutionaryOptimizer:
             return results
     
     def create_temp_config(self, place_edge: float, cancel_edge: float) -> str:
-        """Create a temporary config file with the parameters."""
+        """
+        Create a temporary config file with the parameters.
+        """
         temp_config_path = f"temp_config_{random.randint(1000, 9999)}.toml"
         
         with open(temp_config_path, 'w') as f:
@@ -217,7 +228,9 @@ cancel_edge_percent = {cancel_edge}
         return temp_config_path
     
     def parse_simulation_results(self, output: str) -> Dict:
-        """Parse simulation results from the output."""
+        """
+        Parse simulation results from the output.
+        """
         results = {
             'pnl': 0.0,
             'fill_rate': 0.0,
@@ -300,7 +313,9 @@ cancel_edge_percent = {cancel_edge}
         return fitness
 
     def select_parents(self, population: List[Individual]) -> Tuple[Individual, Individual]:
-        """Select two parents using tournament selection."""
+        """
+        Select two parents using tournament selection.
+        """
         def tournament_select(k=3):
             # Select k random individuals and take the best
             candidates = random.sample(population, k)
@@ -312,7 +327,9 @@ cancel_edge_percent = {cancel_edge}
         return parent1, parent2
     
     def crossover(self, parent1: Individual, parent2: Individual) -> Tuple[Individual, Individual]:
-        """Perform crossover to create two offspring."""
+        """
+        Perform crossover to create two offspring.
+        """
         if random.random() < self.crossover_rate:
             alpha = random.random()
             
@@ -334,7 +351,9 @@ cancel_edge_percent = {cancel_edge}
             return Individual(parent1.place_edge, parent1.cancel_edge), Individual(parent2.place_edge, parent2.cancel_edge)
     
     def mutate(self, individual: Individual) -> None:
-        """Apply mutation to an individual."""
+        """
+        Apply mutation to an individual.
+        """
         if random.random() < self.mutation_rate:
             # Decide which parameter to mutate, or both
             mutation_type = random.randint(0, 2)
@@ -358,7 +377,9 @@ cancel_edge_percent = {cancel_edge}
                 individual.cancel_edge = new_cancel
     
     def run_optimization(self, generations: int = DEFAULT_GENERATIONS) -> Dict:
-        """Run the evolutionary algorithm optimization process."""
+        """
+        Run the evolutionary algorithm optimization process.
+        """
         start_time = time.time()
         
         # Create initial population
@@ -470,7 +491,9 @@ cancel_edge_percent = {cancel_edge}
 
 
 def main():
-    """Main function to run the parameter optimization."""
+    """
+    Main function to run the parameter optimization.
+    """
     parser = argparse.ArgumentParser(description='Optimize TheoStrategy parameters using an Evolutionary Algorithm')
     
     parser.add_argument('--simulator', type=str, required=True,
